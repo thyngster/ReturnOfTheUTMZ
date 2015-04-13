@@ -14,6 +14,8 @@ var url = require('url');
     utmccn: This is set by the campaign value of the url, or in the case of organic traffic it is (organic).
     utmcmd: This is set by the medium defined by the URL.
     utmctr: This is the keyword that brought the visitor here in search engine campaigns.
+    utmcid: This is the lookup table id
+    utmcct: This is the Ad content description
 */
 
     function UTMZCookie(config) {
@@ -22,6 +24,8 @@ var url = require('url');
         this.campaign = config.campaign;
         this.gclid = config.gclid;
         this.term = config.term;
+        this.content = config.content;
+        this.tableid = config.tableid;        
         this.nooverride = config.nooverride || false;
         this.debug = true;
         this.domainHash = config.domainHash || 0;
@@ -77,6 +81,12 @@ var url = require('url');
                 case 'utmctr':
                     this.term = keyValue[1];
                     break;
+                case 'utmcct'                    
+                    this.content = keyValue[1];
+                    break;
+                case 'utmcid'                    
+                    this.cid = keyValue[1];
+                    break;                          
             }
         }
         this.isLoaded = true;
@@ -113,6 +123,12 @@ var url = require('url');
                 case 'utm_term':
                     this.term = value;
                     break;
+                case 'utm_content'                    
+                    this.content = keyValue[1];
+                    break;
+                case 'utm_id'                    
+                    this.tableid = keyValue[1];
+                    break;                     
                 case 'utm_nooverride':
                     if (value == '1' || value == 1) {
                         this.nooverride = true;
@@ -132,6 +148,10 @@ var url = require('url');
         if (this.campaign) trafficSource.push("utmccn=" + this.campaign);
         if (this.medium) trafficSource.push("utmcmd=" + this.medium);
         if (this.term) trafficSource.push("utmctr=" + this.term);
+        if (this.content) trafficSource.push("utmcct=" + this.term);
+        if (this.tableid) trafficSource.push("utmcid=" + this.term);        
+                break; 
+                    
         var sourceString = trafficSource.join("|");
         var cookieValue = [this.domainHash, this.timestamp, this.sessionNumber, this.campaignNumber, sourceString].join('.');
         return cookieValue;
@@ -159,7 +179,7 @@ var url = require('url');
     UTMZCookie.prototype.equivalent = function(other) {
         return (this.source == other.source && this.medium == other.medium &&
                 this.campaign == other.campaign && this.term == other.term &&
-                this.gclid == other.gclid);
+                this.gclid == other.gclid && this.content ==  other.content && this.tableid == other.tableid);
     };
 
     UTMZCookie.prototype.loadAsDirect = function(referrerString) {
