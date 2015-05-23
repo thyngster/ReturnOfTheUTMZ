@@ -191,10 +191,40 @@ var url = require('url');
     
     UTMZCookie.prototype.loadFromReferrerString = function(referrerString) {
         var referrer = url.parse(referrerString);
+    // search engines list from ga.js
+    var organicEngines = "daum:q eniro:search_word naver:query pchome:q images.google:q google:q yahoo:p yahoo:q msn:q bing:q aol:query aol:q lycos:q lycos:query ask:q cnn:query virgilio:qs baidu:wd baidu:word alice:qs yandex:text najdi:q seznam:q rakuten:qt biglobe:q goo.ne:MT search.smt.docomo:MT onet:qt onet:q kvasir:q terra:query rambler:query conduit:q babylon:q search-results:q avg:q comcast:q incredimail:q startsiden:q go.mail.ru:q centrum.cz:q 360.cn:q sogou:query tut.by:query globo:q ukr:q so.com:q haosou.com:q auone:q".split(" ");
+    
+    function getParameterByName(name,url) 
+    {
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regexS = "[\\?&]" + name.toLowerCase() + "=([^&#]*)";
+        var regex = new RegExp(regexS);
+        var results = regex.exec(url.toLowerCase());
+        if (results == null)
+            return "";
+        else
+            return decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    var u = document.referrer;
+    // need to split domain and path, for now all referrer is being check
+    for(var i=0;i<organicEngines.length;i++)
+    {
+      var si = organicEngines[i].split(':');
+      if(referrer.indexOf(si[0])>-1 && (u.indexOf("?"+si[1]+"=") > -1 || referrer.indexOf("&"+si[1]+"=") > -1))
+      {
+        var ctr = getParameterByName('q',referrer) || "(not set)";
+        this.source = si[0];
+        this.term = ctr;
+        this.medium = 'organic';
+        this.campaign = '(organic)';      
+      }else{
         this.source = referrer.hostname.replace(/^www\./,'');
         this.term = referrer.path;
         this.medium = 'referral';
-        this.campaign = '(referral)';
+        this.campaign = '(referral)';    
+      }
+    }
         this.isLoaded = true;
     };
 
